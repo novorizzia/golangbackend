@@ -1,0 +1,30 @@
+1. workflow
+    - is an automated procedure
+    - terdiri atas lebih dari 1 jobs
+    - dapat di trigger dengan :
+            - events
+            - scheduled
+            - manually
+    
+    - untuk membuatnya cuku buat .yml file di repository
+
+2. Runner
+    - is a server to run the jobs
+    - run only 1 job at a time
+    - we can use github hosted or self hosted
+    - melaporkan progress, logs dan hasil kembali ke github
+
+3. Job
+    - is a set(sekumpulan) of steps execute on the same Runner
+    - normally jobs run in parallel
+    - kecuali kita punya jobs yang bergantung satu sama lain (run serially)
+
+4. step
+    - is an individual task
+    - run serially within(dalam) a job
+    - contain one or more actions
+
+5. Action
+    - is a standalone command
+    - if step has multiple actions, action will run serially within a step
+    - can be reused

@@ -1,0 +1,85 @@
+A. Create and Manage Account
+    Owner, balance, currency
+
+B. Rercord all balace changes
+    Create an account entry for each change
+
+C. Money transfer transaction
+    perform money transfer between 2 account consistently within a transaction
+
+
+migrate up digunakan untuk  membuat perubahan secara maju pada schema (old db jadi new db)
+migrate down digunakan untuk meng undo aksi migrate up (new db jadi old db)db
+
+A. apa itu transaction (SQL TX)
+    - adalah sebuah unit dari pekerjaan
+    - seringkali terdiri atas lebih dari satu operasi database
+
+1. contoh :
+* melakukan operasi untuk TRANSFER uang dari akun1 ke akun2 sebanyak Rp 3 juta
+    - pertama buat Rercord transfer dengan amount 3 juta
+    - kedua buat Rercord entry dengan account_id ke akun1 dengan amount -3juta
+    - ketiga buat Rercord entry dengan account_id ke akun2 dengan amount +3juta
+    - kurangi balance dari akun1 sebanyak 3juta
+    - tambah balance dari akun2 sebanyak 3juta
+
+2. alasan mengapa kita perlu menggunakan db transaction
+    1 to provide reliable and consistent unit work, bahkan dalam jika terjadi kegagalan sistem
+    2 to provide isolation between program that acccess the database concurrently (secara bersamaan)
+
+    untuk memenuhi 2 tujuan diatas maka database harus memenuhi ACID PROPERTY
+     - Atomicity  = sebuah operasi harus berhasil sepenuhnya atau  gagal sepenuhnya dan database berubah kembali ke kondisi awalnya (unchanged) jika gagal
+     - Consistentcy = keadaan database harus valid setelah transaction. semua constraint (batasan atau syarat") harus terpenuhi. atau dengan kata lain semua data yang diinputkan harus valid sesuai dengan tipe datanya termasuk cascade (sequence of some event)
+     - isolation = transaction yang berjalan bersamaan (concurrently) tidak boleh mempengaruhi satu sama lain. ada  beberapa level dari isolation yang mendefinisikan kapan suatu perubahan yang dilakukan oleh sebuah transaction dapat dilihat oleh transaction lainnya
+     - durability = data data transaction yang sukses dilakukan harus terecord dan terus menerus harus ada didalam penyimpanan atau tidak boleh hilang apapun yang terjadi pada sistem
+
+
+jika kita tidak menerapkan isolation maka akan ada kamungkinan terjadinya "read phenomena"
+
+READ PHENOMENA
+terjadi jika ada satu transaction yang terpengaruhi dengan transaction lainnya
+    a. when low level transaction isolation
+
+     - dirty read 
+     = a transaction READS data writen by other concurrent UNCOMMITED transaction. ini buruk karna kita tidak tau apakah data yang dibaca tersebut pada akhirnya akan di commit atau akan di rollback
+
+     - non-repeatable read 
+     = a transaction READS the SAME ROW TWICES and return different value because it has been MODIFIED after the first read by other COMMITED transaction. 
+
+     - phantom read 
+     = a transaction RE-EXEECUTES a query to FIND ROWS that satisfy a condition and return a DIFFERENT SET of rows, due to changes by other recently commited transaction. pada pemanggilan pertama ada 5 row lalu ketika dipanggil lagi hanya 4 yang muncul
+     
+     - serialization anomaly
+     = the result of a GROUP of concurrent COMMITED TRANSACTION is IMPOSIBLE TO ACHIVE if we try to run them SEQUENTIALLY in any order without overlapping
+
+
+4 STANDARD ISOLATION LEVELS (by ANSI (american national standards institue))
+
+makin tinggi nomornya berarti semakin tinggi
+1. read uncommited = pada level ini sebuah transaksi dapat membaca data dari transaksi lain yang belum di commit
+
+2. read commited = tranksaksi hanya bisa membaca data dari tranksaksi lain yang sudah di commit
+
+3. repeatable read = same read or select query always return same result. tidak peduli berapa kali dieksekusinya bahkan ketika ada transaksi lain yang melakukan commit, jika ada commit dari tranksaksi lain maka akan mengembalikan nilai lama seakan transaksi lain tsb tidak pernah terjadi
+
+4. serializable = can achive same result if execute transaction serially in some order instead of concurrently. tranksaksi yang dijalankan secara concurent yang berjalan pada level ini dijamin menghasilkan hasil akhir yang sama jika mereka di eksekusi SEQUENTIALLY dalam urutan tertentu satu demi satu tanpa overlapping. 
+basically at least ada satu urutan untuk menjalankan concurent transaction sehingga ketika kita menjalankannya satu demi satu hasil akhirnya akan sama
+
+
+
+postgress ql
+
+read uncommited = untuk postgress tidak memiliki read uncommited, bisa kita set namun behaviournya sama seperti read commited
+
+read commited = mencegah dirty read
+
+repeatable read = mencegah non-repeatable read dan juga mencegah phantom read terjadi tetapi juga mencegah confusing state dimana pada sql lain meskipun kita tidak dapat membaca data yang diubah transaksi lain tapi kita masih bisa mengubah data di tranksaksi kita sendiri yang mana itu akan membuat kebingungan
+
+serializable = mencegah serializable anomaly dengan mencegah transaction read/write yang dilakukan tranksaksi lainnya yang mana transaction read/write tersebut nilainya bergantung dengan nilai yang terpengaruhi oleh tranksaksi yang lainnya lagi
+
+KEEP IN MIND when using high level isolation
+retry mechanism
+- there might be error, timeout or deadlock
+
+read documentation
+- each database engine might implement isolation level differently

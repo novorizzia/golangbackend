@@ -1,0 +1,51 @@
+0. TIAP LANGKAH DIBAWAH SEKALIAN MEMBUAT MAKEFILE
+
+1. buat kode sql secara manual (
+    - tabel-tabel
+    - relasi antar tabel atau setup foreign key
+    - setup indexing pada tiap table
+
+) atau bisa menggunakan design database di dbdiagram.io
+
+2. setup postgress di docker atau podman
+
+
+3. setup database migration (
+    - buat folder db > migration
+    - schema up (salinan dari kode sql)
+    - schema down (lawan dari schema up)
+)
+
+4. running postgress pada docker atau podman
+    - podman run --name ps15 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=21204444 -d docker.io/library/postgres:15.2-alpine
+
+5. lakukan migration up
+    - migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose up
+
+6. generate kode CRUD menggunakan sqlc (
+    - https://docs.sqlc.dev/en/stable/tutorials/getting-started-postgresql.html
+    - setting configuration, gunakan v1 saja untuk template ada di web nya
+    - buat folder db > query untuk menyimpan kode sql untuk setiap table
+    - buat folder db > sqlc untuk menyimpan kode generate hasil proses sqlc
+    - sqlc init untuk Create an empty sqlc.yaml settings file
+    - sqlc generate
+)
+
+7. buat testing
+
+8. buat transaction (transfer contohnya)
+
+9. buat testing
+
+10. setting sql agar tau bahwa jika kita ingin melakukan transaction maka yang berubah hanya balance nya saja dan tidak merubah key. hal ini berguna untuk melakukan transcation secara concurent 
+SELECT * FROM accounts
+WHERE id = $1 LIMIT 1
+FOR NO KEY UPDATE;
+
+11. buat testing
+
+12. ubah kode transcation agar secara concurent dapat melayani permintaan transfer dari akun 1 ke akun 2 dan juga sebaliknya akun 2 ke akun 1 secara bersaamaan
+
+13. buat testing
+
+14 buat CI dan CD dengan github action
