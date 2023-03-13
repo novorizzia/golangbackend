@@ -34,3 +34,5 @@
 github push memerlukan token baru setiap saat kali ingin melakukan push
 sdf
 sdfsdafads
+
+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
