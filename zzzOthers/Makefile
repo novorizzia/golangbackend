@@ -4,17 +4,17 @@ tes:
 	echo "hello world"
 
 opendb:
-	docker exec -it ps15 psql -U root
+	podman exec -it ps15 psql -U root
 
 # Makefile digunakan untuk memudahkan kita menjalankan kode dari CLI dan juga memudahkan bekerja secara team agar team tidak perlu susah memperlajari kode asing yang kita buat
 postgres:
-	docker run --name ps15 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=21204444 -d postgres:15.2-alpine
+	podman run --name ps15 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=21204444 -d docker.io/library/postgres:15.2-alpine
 
 createdb:
-	docker exec -it ps15 createdb --username=root --owner=root bank_mandiri
+	podman exec -it ps15 createdb --username=root --owner=root bank_mandiri
 
 dropdb:
-	docker exec -it ps15 dropdb bank_mandiri
+	podman exec -it ps15 dropdb bank_mandiri
 
 migup:
 	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose up
@@ -30,4 +30,4 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb tes opendb dropdb migup migdown sqlc test
+.PHONY: postgres createdb dropdb tes opendb migup sqlc

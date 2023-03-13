@@ -14,6 +14,27 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    # kopas saja si dari google github action postgres
+     # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:15.2-alpine
+        # Provide the password for postgres
+        env:
+          # ini tinggal salin dari Makefile
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: 21204444
+          POSTGRES_DB: bank_mandiri
+        # Set health checks to wait until postgres has started
+        # memberitahu runner bagaimana caranya mengecek apakah postgres sudah berjalan dengan sukses atau tidak, jadi runner tahu kapan untuk memulai langkah selanjutnya di workflow. ini diperlukan karena kita perlu mengetes menjalankan ps terlebih dahulu sebelum melakukan tes transaksi" didalamnya 
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v3
 
@@ -25,6 +46,10 @@ jobs:
 
     - name: Check out code into the Go module directiory
       uses: actions/checkout@v3
+
+    # setelah mengecek go, kita bisa melakukan migrate up
+    - name: Jalankan migrasi up
+      run: make migup
 
     - name: Test
       run: make test
