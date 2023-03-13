@@ -35,8 +35,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
         # spesifi port yang kita ingin expose ke external host
-        # ports:
-        #   - 5432:5432
+        #  2023/03/13 17:04:24 error: dial tcp [::1]:5432: connect: connection refused
+        ports:
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v3
