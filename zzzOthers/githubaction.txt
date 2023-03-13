@@ -28,7 +28,3 @@
     - is a standalone command
     - if step has multiple actions, action will run serially within a step
     - can be reused
-
-
-
-github push memerlukan token baru setiap saat kali ingin melakukan push
