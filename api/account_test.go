@@ -162,6 +162,3 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, inputAccount db.A
 
 	require.Equal(t, inputAccount, getAccount)
 }
-
-abcedfghijklmnopqrstuvwxyz
-ABCDEFGHIJKLMNOPQRSTUVWXYZ
