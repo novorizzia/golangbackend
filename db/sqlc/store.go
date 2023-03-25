@@ -7,8 +7,15 @@ import (
 	// "sync"
 )
 
-// Store menyediakan semua function" untuk mengeksekusi db queris dan transaction
-type Store struct {
+// Store provide all functions to execute db queries and transaction
+type Store interface {
+	TransferTxV2(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+	Querier // embed interface QUerier membuat store interface memiliki semua function yang dimiliki oleh interface querier
+}
+
+// SQLStore menyediakan semua function" untuk mengeksekusi db queris dan transaction
+// SQLStore provides all functions to executes SQL. queries and transaction
+type SQLStore struct {
 	// mutex sync.Mutex
 	// extending queries, dengan embeding queries ke struct store maka setiap function" yang ada disediakan pada queris akan tersedia di struct store ini dan kita bisa menambahkan function" tsb ke struct transaction yang baru
 	*Queries
@@ -17,9 +24,9 @@ type Store struct {
 }
 
 // membuat new store
-func NewStore(db *sql.DB) *Store {
+func NewStore(db *sql.DB) Store {
 	// membuat newstore object dan mengembalikannya
-	return &Store{
+	return &SQLStore{
 		db: db,
 		// new membuat dan mengembalikan object Queries
 		Queries: New(db),
@@ -27,7 +34,7 @@ func NewStore(db *sql.DB) *Store {
 }
 
 // mengeksekusi function yang ada dalam database
-func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	// mulai transaction baru
 	// &sql.TxOptions{} membolehkan kita untuk melakukan custom level dari isolation. jika tidak diterapkan maka level nya akan default sesuai dengan jenis database yg digukanan. untuk postgres levelnya write commited
 	// tx,err := store.db.BeginTx(ctx, &sql.TxOptions{})
@@ -71,11 +78,11 @@ type TransferTxParams struct {
 	Description   string `json:"description"`
 }
 
-// var txKey = struct{}{}  // just for debugging purpose 
+// var txKey = struct{}{}  // just for debugging purpose
 
 // TransferTx menjalankan proses transfer dari satu akun ke akun lainnya
 // buat transfer record, entries dan mengupdate balance dari setiap akun
-func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	// store.mutex.Lock()
 	// defer store.mutex.Unlock()
 
@@ -161,7 +168,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Trans
 }
 
 // TransferTx yang sudah menghandle adanya deadlock
-func (store *Store) TransferTxV2(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTxV2(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
@@ -200,10 +207,10 @@ func (store *Store) TransferTxV2(ctx context.Context, arg TransferTxParams) (Tra
 
 		// untuk menghindari deadlock kita bisa memastikan agar transaction yang dijalankan selalu dari id account yang paling kecil terlebih dahulu
 		if arg.FromAccountID < arg.ToAccountID {
-			result.FromAccount, result.ToAccount,err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
+			result.FromAccount, result.ToAccount, err = addMoney(ctx, q, arg.FromAccountID, -arg.Amount, arg.ToAccountID, arg.Amount)
 		} else {
-			result.ToAccount, result.FromAccount,err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
-		
+			result.ToAccount, result.FromAccount, err = addMoney(ctx, q, arg.ToAccountID, arg.Amount, arg.FromAccountID, -arg.Amount)
+
 		}
 
 		if err != nil {
@@ -224,7 +231,7 @@ func addMoney(
 	account2ID,
 	amount2 int64,
 ) (account1, account2 Account, err error) {
-	account1,err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
+	account1, err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
 		Amount: amount1,
 		ID:     account1ID,
 	})
@@ -234,7 +241,7 @@ func addMoney(
 		return
 	}
 
-	account2,err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
+	account2, err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
 		Amount: amount2,
 		ID:     account2ID,
 	})

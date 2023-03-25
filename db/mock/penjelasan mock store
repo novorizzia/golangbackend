@@ -1,0 +1,1 @@
+mockstore = struct that implement all required function of the store interface

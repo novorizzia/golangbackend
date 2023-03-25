@@ -49,3 +49,43 @@ FOR NO KEY UPDATE;
 13. buat testing
 
 14 buat CI dan CD dengan github action
+
+15. buat rest api menggunakan GIN
+
+16. setup Viper untuk memuat konfigurasi dari environtment variables atau file\
+    a. kenapa memuat file konfigurasi dari file
+        - easily specify default configuration for local development or testing
+
+    b. kenapa memuat konfigurasi dari environtment variables
+        - will help us easily overrie the default configurations when deploy with docker containers when deploying our application for stagging or production
+
+    1. buat app.env dan simpan konfig disitu
+    2. buat config.go di util 
+
+17. testing lagi (mock database) menggunakan gomock
+
+    a. why mock database ?
+    1. independent test
+        isolate test data from real database to avoid conflicts
+
+    2. faster test
+        reduce  a lot of time talking to the database. karna test tidak harus menghabiskan banyak waktu talking to the db dan menunggu query untuk berjalan. semua action akan di lakukan di memory dalam proses yang sama
+
+    3. 100% coverage
+        easily setup edge cases: unexpected errors
+
+mock db & real db should implement the same interface
+
+    a. how to mock ?
+     1. user fake db : memory
+        implement a fake version of db: store data in memory. kekurangannya kita harus menuliskan banyak kode yang hanya digunakan untuk testing
+
+     2. user db strub : gomock
+        generate and build stubs that return hard coded value
+
+apakah sudah cukup jika kita menggunakan mock ? 
+ya karena database kita yang asli sudah kita pernah tes sebelumnya
+
+langkah langhkah :
+    1. mockgen backendmaster/db/sqlc ==> karena store terletak di db/sqlc
+    mockgen -package mockdb -destination db/mock/store.go backendmaster/db/sqlc Store

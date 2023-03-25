@@ -7,5 +7,6 @@ packages:
     engine: "postgresql" # memberitahu sqlc database endgine apa yang digunakan
     emit_json_tags: true # sqlc add JSON tags to the generated structs
     emit_prepared_queries: false # sqlc to generatd code that work with prepared statement, for this case make it false so it will more simple
-    emit_interface: false # sqlc generate querier interface for the fenerated package. usefull for mock and testing database if on
+    emit_interface: true # sqlc generate querier interface for the fenerated package. usefull for mock and testing database if on
     emit_exact_table_names: false # singularize the table name to use as the model struct name, better let it false. it will make accounts struct from accounts table in the end it will make confusion
+    emit_empty_slices: true # operasi sql many jika isinya kosong akan mengembalikan slice kosong daripada mengembalikan null

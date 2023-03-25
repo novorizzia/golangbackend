@@ -30,4 +30,8 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb tes opendb dropdb migup migdown sqlc test
+
+server:
+	go run main.go
+
+.PHONY: postgres createdb dropdb tes opendb dropdb migup migdown sqlc test server

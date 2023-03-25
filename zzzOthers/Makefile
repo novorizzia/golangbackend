@@ -30,4 +30,7 @@ sqlc:
 test:
 	go test -v -cover ./...
 
-.PHONY: postgres createdb dropdb tes opendb migup sqlc
+mock:
+	mockgen -package mockdb -destination db/mock/store.go backendmaster/db/sqlc Store
+
+.PHONY: postgres createdb dropdb tes opendb migup sqlc mock

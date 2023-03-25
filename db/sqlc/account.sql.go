@@ -96,7 +96,7 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 
 const listAccount = `-- name: ListAccount :many
 SELECT id, owner, balance, currency, created_at FROM accounts
-ORDER BY owner
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -112,7 +112,7 @@ func (q *Queries) ListAccount(ctx context.Context, arg ListAccountParams) ([]Acc
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(

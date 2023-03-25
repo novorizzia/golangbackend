@@ -1,6 +1,7 @@
 package random
 
 import (
+	"backendmaster/utils/crv"
 	"math/rand"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ func init() {
 }
 
 // random angka diantara min dan max
-func randomInt(min, max int64) int64 {
+func RandomInt(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1) // mengembalikan int antara min dan max
 }
 
@@ -39,11 +40,11 @@ func RandomOwner() string {
 }
 
 func RandomMoney() int64 {
-	return randomInt(100, 1000)
+	return RandomInt(100, 1000)
 }
 
 func RandomCurrency() string {
-	currencies := []string{"USD", "RP", "RUB"}
+	currencies := []string{crv.USD, crv.RP, crv.RUB}
 	lengthCurrencies := len(currencies)
 	randomCurrencies := currencies[rand.Intn(lengthCurrencies)]
 	return randomCurrencies
@@ -52,7 +53,7 @@ func RandomCurrency() string {
 func RandomDescription() string {
 	var desc string
 
-	for i := 0; i <= int(randomInt(1, 4)); i++ {
+	for i := 0; i <= int(RandomInt(1, 4)); i++ {
 		desc += randomString(5)
 		desc += " "
 	}
