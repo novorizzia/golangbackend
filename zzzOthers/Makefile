@@ -22,6 +22,14 @@ migup:
 migdown:
 	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose down
 
+migupone:
+	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose up 1
+# angka satu berarti kita hanya ingin migup satu versi lebih tinggi dari pada versi saat ini yang sedang berlaku
+
+migdownone:
+	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose down 1
+# angka satu berarti kita hanya ingin merollback one last migration atau hanya jalankan migration yang paling akhir saja
+
 sqlc:
 	sqlc generate
 # jika terdapat lebih dari satu versi schema di migration itu akan membuat error proses generatenya
@@ -33,4 +41,4 @@ test:
 mock:
 	mockgen -package mockdb -destination db/mock/store.go backendmaster/db/sqlc Store
 
-.PHONY: postgres createdb dropdb tes opendb migup sqlc mock
+.PHONY: postgres createdb dropdb tes opendb migup migdown migupone migdownone sqlc mock 

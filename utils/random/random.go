@@ -2,6 +2,7 @@ package random
 
 import (
 	"backendmaster/utils/crv"
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
@@ -20,7 +21,7 @@ func RandomInt(min, max int64) int64 {
 const alphabet = "abcedfghijklmnopqrstuvwxyz"
 
 // random string dengan length sepanjang n
-func randomString(n int) string {
+func RandomString(n int) string {
 	var sb strings.Builder
 
 	lenAlpha := len(alphabet)
@@ -36,7 +37,7 @@ func randomString(n int) string {
 
 // generate random owner name
 func RandomOwner() string {
-	return randomString(6)
+	return RandomString(6)
 }
 
 func RandomMoney() int64 {
@@ -54,9 +55,17 @@ func RandomDescription() string {
 	var desc string
 
 	for i := 0; i <= int(RandomInt(1, 4)); i++ {
-		desc += randomString(5)
+		desc += RandomString(5)
 		desc += " "
 	}
 
 	return desc
+}
+
+func RandomEmail(name string) string {
+	return fmt.Sprintf("%s@gmail.com", name)
+}
+
+func RandomPassword() string {
+	return RandomString(4)
 }

@@ -89,3 +89,22 @@ ya karena database kita yang asli sudah kita pernah tes sebelumnya
 langkah langhkah :
     1. mockgen backendmaster/db/sqlc ==> karena store terletak di db/sqlc
     mockgen -package mockdb -destination db/mock/store.go backendmaster/db/sqlc Store
+
+18. buat rest api untuk transfers
+
+19. buat custom validator
+
+20. buat table users dan perbarui schema migration
+
+    langkah-langkah memperbaharui migration
+    1. generate new version of migration 
+        migrate create -ext sql -dir db/migration -seq add_users 
+    
+    2. isi migration yang baru dengan sql yang baru saja, jika ada kode yang mirip kode lama tidak perlu karna sudah ada dimig lama dan hal itu akan membuat konflik
+
+    3. lakukan migdown
+        saat pertama kali pembuatan table harus dipikirkan dengan baik" bagaimana schema database tersebut. karena kadang penambahan table dengan constraint ke table lama akan menimbulkan konflik jika isi dari table lama tersebut tidak memiliki constraint ke isi dari table baru
+
+        hal itu membuat kita harus melakukan migdown yang mana akan menghapus data yg sudah pernah diinputkan sebelumnya. hal ini akan sangat beresiko jika program sudah pada tahap production 
+
+    4. lakukan migup

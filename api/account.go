@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 // kita akan mendapatkan input ini parameter dari body dari http request yang mana merupakan adalah json object
@@ -38,6 +39,15 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			// print untuk melihat error code name
+			switch pqErr.Code.Name() {
+			case "foreign_key_violation", "unique_violation":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		} // konversi error ke tipe pq.error
+
 		// jika error tidak nill pasti terdapat isu internal
 		// jadi kita harus mengirimkan status bahwa server sedang error
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
