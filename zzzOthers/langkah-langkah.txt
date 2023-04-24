@@ -108,3 +108,21 @@ langkah langhkah :
         hal itu membuat kita harus melakukan migdown yang mana akan menghapus data yg sudah pernah diinputkan sebelumnya. hal ini akan sangat beresiko jika program sudah pada tahap production 
 
     4. lakukan migup
+
+21. membuat robust testing untuk api
+
+22. menerapkan Token Based Authentication
+    alur TBA 
+    1. client melakukan POST untuk login (username,password)
+    2. server akan mengecek apakah username dan password tsb benar apa tidak
+    3. jika benar 
+    4. server akan membuat dan sign a token 
+    5. server mengirim status 200 dan juga access tokennya (jwt atau paseto) 
+    6. token tsb dapat digunakan client ketika melakukan fetch dimana akan diletakan diheader fetch tsb
+    7. contoh client request list akun bank
+    8. server akan memverifikasi apakah token yang dikirim oleh client valid atau tidak 
+    9. jika valid maka server akan mengirim balik status 200 beserta list akun yg di request 
+    
+06:45
+
+
