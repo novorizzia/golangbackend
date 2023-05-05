@@ -18,6 +18,6 @@ func HashedPassword(password string) (string, error) {
 }
 
 func CheckPassword(password string, hashPassword string) error {
-	// mengambil data cost dan salt dari hashpassword yang disimpan didatabase, lalu dengan cost dan salt tersebut kita jadikan patokan untuk mengubah password yang baru dikirimkan oleh user menjadi hash baru, karena dua duanya sudah berbentuk hash maka kini bisa dikomparasikan 
+	// mengambil data cost dan salt dari hashpassword yang disimpan didatabase, lalu dengan cost dan salt tersebut kita jadikan patokan untuk mengubah password yang baru dikirimkan oleh user menjadi hash baru, karena dua duanya sudah berbentuk hash maka kini bisa dikomparasikan
 	return bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password))
 }

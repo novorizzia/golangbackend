@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 // berbagai error yang dikembalikan oleh VerifyToken function
 var (
 	ErrorExpiredToken = errors.New("token sudah basi cuy")
@@ -34,7 +33,6 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 		Username:  username,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
-
 	}
 	return payload, nil
 }

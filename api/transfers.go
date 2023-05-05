@@ -2,7 +2,9 @@ package api
 
 import (
 	db "backendmaster/db/sqlc"
+	"backendmaster/token"
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -25,11 +27,20 @@ func (server *Server) CreateTransfer(ctx *gin.Context) {
 		return
 	}
 
-	if !server.validateAccount(ctx, req.FromAccountID, req.Currency) {
+	acc, isValid := server.validateAccount(ctx, req.FromAccountID, req.Currency)
+	if !isValid {
 		return
 	}
 
-	if !server.validateAccount(ctx, req.FromAccountID, req.Currency) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if acc.Owner != authPayload.Username {
+		err := errors.New("authenticated user tidak berhak transfer dari akun dengan id ini ")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	_, isValid = server.validateAccount(ctx, req.ToAccountID, req.Currency)
+	if !isValid {
 		return
 	}
 
@@ -50,22 +61,22 @@ func (server *Server) CreateTransfer(ctx *gin.Context) {
 
 }
 
-func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) validateAccount(ctx *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("akun dengan id [%d] memiliki currency yang berbeda : %s v %s", accountID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }

@@ -30,10 +30,10 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (string, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "",err
+		return "", err
 	}
 
-	return maker.paseto.Encrypt(maker.symmetricKey,payload, nil)
+	return maker.paseto.Encrypt(maker.symmetricKey, payload, nil)
 }
 
 // VerifyToken melakukan verifikasi pada token. jika valid akan mengirimkan payload yang ada dalam body dari token tersebut

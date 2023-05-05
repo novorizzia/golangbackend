@@ -2,7 +2,9 @@ package api
 
 import (
 	db "backendmaster/db/sqlc"
+	"backendmaster/token"
 	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +16,6 @@ type createAccountRequest struct {
 	// USER INPUT VALTIDATION
 	// binding:"required" digunakan untuk memberi tahu bahwa properti ini wajib di isi
 	// oneof=RUB RP USD properti ini hanya bisa di isi oleh salah satu dari nilai berikut
-	Owner    string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required",currency`
 }
 
@@ -31,8 +32,11 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// ctx.MustGet mengembalikan general interface jadi kita harus mengcasting terlebih dahulu dalam bentuk payload object yang ada pada token
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    authPayload.Username,
 		Balance:  0,
 		Currency: req.Currency,
 	}
@@ -82,6 +86,13 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if account.Owner != authPayload.Username {
+		err := errors.New("authenticated user tidak berhak mengakses akun ini ")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -99,7 +110,9 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountParams{
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}

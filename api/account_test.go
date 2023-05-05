@@ -3,6 +3,7 @@ package api
 import (
 	mockdb "backendmaster/db/mock"
 	db "backendmaster/db/sqlc"
+	"backendmaster/token"
 	"backendmaster/utils/random"
 	"bytes"
 	"database/sql"
@@ -12,6 +13,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -19,17 +21,57 @@ import (
 
 // tes untuk GetAccountApi handler
 func TestGetAccountAPI(t *testing.T) {
-	account := randomAccount()
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		accountID     int64
+		setupAuth     func(t *testing.T, request *http.Request, tokenMaker token.Maker)
 		buildStubs    func(store *mockdb.MockStore)
 		checkResponse func(store *testing.T, responseRecorder *httptest.ResponseRecorder)
 	}{
 		{
+			name:      "UnAuthorized",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, "Unauthorized_user", time.Minute)
+
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(store *testing.T, responseRecorder *httptest.ResponseRecorder) {
+				// check response status
+				require.Equal(t, http.StatusUnauthorized, responseRecorder.Code)
+			},
+		},
+		{
+			name:      "No Auth",
+			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(0)
+			},
+			checkResponse: func(store *testing.T, responseRecorder *httptest.ResponseRecorder) {
+				// check response status
+				require.Equal(t, http.StatusUnauthorized, responseRecorder.Code)
+			},
+		},
+		{
 			name:      "Ok",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				// BUILD STUBS
 				// gomock.Any() == karena ctx bisa bertipe any
@@ -55,6 +97,10 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				// BUILD STUBS
 				// gomock.Any() == karena ctx bisa bertipe any
@@ -72,6 +118,10 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "InternalServerError",
 			accountID: account.ID,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				// BUILD STUBS
 				// gomock.Any() == karena ctx bisa bertipe any
@@ -90,6 +140,10 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "InvalidId",
 			accountID: 0,
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t, request, tokenMaker, authorizationTypeBearer, user.Username, time.Minute)
+
+			},
 			buildStubs: func(store *mockdb.MockStore) {
 				// BUILD STUBS
 				// gomock.Any() == karena ctx bisa bertipe any
@@ -116,7 +170,7 @@ func TestGetAccountAPI(t *testing.T) {
 			store := mockdb.NewMockStore(ctrl)
 
 			// start test http server and send request
-			server := NewServer(store)
+			server := newTestServer(t, store)
 
 			// BUILD STUBS
 			testCase.buildStubs(store)
@@ -130,6 +184,8 @@ func TestGetAccountAPI(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			testCase.setupAuth(t, request, server.tokenMaker)
+
 			// function dibawah mengirim request melalui server router dan merecord responsenya di recorder
 			server.router.ServeHTTP(responseRecorder, request)
 
@@ -141,10 +197,10 @@ func TestGetAccountAPI(t *testing.T) {
 
 }
 
-func randomAccount() db.Account {
+func randomAccount(owner string) db.Account {
 	return db.Account{
 		ID:       random.RandomInt(1, 1000),
-		Owner:    random.RandomOwner(),
+		Owner:    owner,
 		Balance:  random.RandomMoney(),
 		Currency: random.RandomCurrency(),
 	}

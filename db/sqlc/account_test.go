@@ -1,6 +1,7 @@
 package db // package harus sama dengan yang ada pada account.sql.go
 
 import (
+	"backendmaster/utils/crv"
 	"backendmaster/utils/random"
 	"context"
 	"database/sql"
@@ -92,20 +93,55 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestListAccount(t *testing.T) {
+	// for i := 0; i < 3; i++ {
+	// 	createRandomAccount(t)
+	// }
+
+	user := createRandomUser(t)
+	cur := []string{crv.USD, crv.RP, crv.RUB}
+
 	for i := 0; i < 3; i++ {
-		createRandomAccount(t)
+		var arg CreateAccountParams = CreateAccountParams{
+			Owner:   user.Username,
+			Balance: random.RandomMoney(),
+			// Currency: random.RandomCurrency(), // kita tidak menggunkan random currency karna kemungkinan random menghasilkan currency yang sama untuk satu username sangat tinggi
+			Currency: cur[i],
+		}
+
+		_, err := testQueries.CreateAccount(context.Background(), arg)
+		require.NoError(t, err)
 	}
 
+	// tes limit 2
 	arg := ListAccountParams{
-		Limit:  3,
+		Owner:  user.Username,
+		Limit:  2,
 		Offset: 0,
 	}
 
 	listAccount, err := testQueries.ListAccount(context.Background(), arg)
 	require.NoError(t, err)
+	require.Len(t, listAccount, 2)
+
+	for _, account := range listAccount {
+		require.NotEmpty(t, account)
+		require.Equal(t, user.Username, account.Owner)
+	}
+
+	// tes limit 3
+	arg = ListAccountParams{
+		Owner:  user.Username,
+		Limit:  3,
+		Offset: 0,
+	}
+
+	listAccount, err = testQueries.ListAccount(context.Background(), arg)
+	require.NoError(t, err)
 	require.Len(t, listAccount, 3)
 
 	for _, account := range listAccount {
 		require.NotEmpty(t, account)
+		require.Equal(t, user.Username, account.Owner)
+
 	}
 }

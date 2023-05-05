@@ -16,11 +16,9 @@ import (
 // 	serverAddress = "0.0.0.0:8080"
 // )
 
-
-
 func main() {
 	// mengambil config yang sudah diberikan oleh viper
-	config,err := conf.LoadConfig(".") // membaca file config dilokasi yang sama , lokasi cukup sampai pada foler yang nampung app.env saja, app.env tidak dituliska
+	config, err := conf.LoadConfig(".") // membaca file config dilokasi yang sama , lokasi cukup sampai pada foler yang nampung app.env saja, app.env tidak dituliska
 	if err != nil {
 		log.Fatal("tidak bisa membaca configuration : ", err)
 	}
@@ -35,8 +33,10 @@ func main() {
 	// create store
 	store := db.NewStore(conn)
 
-	server := api.NewServer(store)
-
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("tidak bisa membuat server : ", err)
+	}
 
 	// start server
 	err = server.Start(config.ServerAddress)

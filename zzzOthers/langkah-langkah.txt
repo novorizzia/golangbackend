@@ -122,7 +122,35 @@ langkah langhkah :
     7. contoh client request list akun bank
     8. server akan memverifikasi apakah token yang dikirim oleh client valid atau tidak 
     9. jika valid maka server akan mengirim balik status 200 beserta list akun yg di request 
-    
-06:45
+
+23 membuat token maker
+
+24. mengimplementasikan token maker
+    1. menambahkan environtment variable yang baru
+    TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+    2. mengupdate test function
+    3. update server
+    4. tambahkan route api
+
+24 bonus : mengubah tipe token 
+    tinggal ubah newPasetoMaker menjadi newJWTMaker pada function NewServer di server
 
 
+25. mengimplementasikan Authentication Middleware untuk mencegah pengguna melakukan request yang bukan hak nya 
+    - Middleware menerima gin.Context pada argumennya
+    - Middleware memiliki kemampuan spesial untuk melakukan abort pada request lalu mengirim response pada client tanpa meneruskannya pada handler function yang asli. contoh :
+        - kita bisa parse dan cek apakah Authentication token itu valid atau tidak. jika invalid atau expired maka panggil context.abort untuk menghentikan request dan mengirim status code pada client. jika token valid kita bisa menyimpan parse token payload pada context dan panggil context.Next untuk meneruskannya ke handler yang asli
+
+26. mengimplementasikan Authorization 
+    - authorization rule spesifik dan berbeda beda pada setiap api contoh:
+        - API : RULE
+        - createAccount : user yang sudah login hanya bisa membuat akun untuk dirinya sendiri
+        - getAccount : logged user hanya bisa get account yang dia miliki
+        - listAccount : logged user hanya bisa get list account yang merupakan miliknya
+        - transferMoney : logged user hanya bisa mengirim uang dari akun nya sendiri 
+
+    jika diperlukan kode query bisa di update untuk mengatasi methode akses baru menggunakan authorization ini
+        - run make sqlc untuk mengenerate sqlc baru
+        - run make mock untuk mengupdate mock store
+        - update test yang bersangkutan dengan perubahan karna pastinya sudah tidak kompatible lagi
