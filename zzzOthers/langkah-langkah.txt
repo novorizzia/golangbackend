@@ -154,3 +154,11 @@ langkah langhkah :
         - run make sqlc untuk mengenerate sqlc baru
         - run make mock untuk mengupdate mock store
         - update test yang bersangkutan dengan perubahan karna pastinya sudah tidak kompatible lagi
+
+27. aturan dalam membuat fitur baru
+    - jangan pernah membuat fitur baru di branch utama (main/master)
+    - buat di branch baru, dan hanya di push ke branch utama jika fitur tersebut sudah lolos semua tes dan pengujian dan dilakukan review
+
+    - buat branch baru : git checkout -b NewBranchName contoh ft/docker ft artinya fitur 
+
+    - git push origin ft/docker
