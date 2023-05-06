@@ -8,7 +8,7 @@ opendb:
 
 # Makefile digunakan untuk memudahkan kita menjalankan kode dari CLI dan juga memudahkan bekerja secara team agar team tidak perlu susah memperlajari kode asing yang kita buat
 postgres:
-	podman run --name ps15 -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=21204444 -d postgres:15.2-alpine
+	podman run --name ps15 --network bank-network -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=21204444 -d postgres:15.2-alpine
 
 createdb:
 	podman exec -it ps15 createdb --username=root --owner=root bank_mandiri
