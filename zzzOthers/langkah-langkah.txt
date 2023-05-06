@@ -162,3 +162,55 @@ langkah langhkah :
     - buat branch baru : git checkout -b NewBranchName contoh ft/docker ft artinya fitur 
 
     - git push origin ft/docker
+
+28. membuat Docker file secara multiple stage untuk membuat lighweigt docker image
+     - buat docker file
+     - lakukan multiple stage pada Dockerfile agar ukuran file yang dihasilkan menjadi kecil
+     - install image yang diperlukan oleh FROM di dockerfile dengan : podman pull docker.io/library/packageYangDiperlukan
+     - jika telah selesai run : podman build -t bankmandiri:terbaru .
+     - untuk list docker images run : docker images
+     - jika ada iamge yang <none> itu karna ada tag yang sama yang lebih baru ditambahkan sehingga yang lama menjadi none
+     - untuk menghapusnya : podman rmi ImageID
+
+29. start a containers
+    - docker run --name bankmandiri -p 8080:8080 bankmandiri:terbaru
+    - mungkin akan terjadi error karna container tidak bisa menemukan app.env karna file itu tidak ada didalam docker image yang kita buat. untuk memperbaiki nya copy app.env file di dockerfile
+    - hapus dulu lalu yang tadi bikin lagi yang baru : podman rm bankmandiri
+
+    jika ingin mengubah gin ke release mode
+    - hapus terlebih dahulu container yang lama
+    - docker run --name bankmandiri -p 8080:8080 -e GIN_MODE=release bankmandiri:terbaru
+
+    - ubah gin ke release mode
+
+    - run lagi dan akan error ketika kita mencoba login di postman. itu karena pada app.env kita sambungkan ke port localhost. masalahnya ada pada psgres dan bankmandiri terdapat dalam dua container yang berbeda. sehingga mereka tidak memilliki network ip adrres yang sama 
+
+    - docker container inspect ps15 : melakukan inspeksi config dari sebuah container. didalam sini juga terdapat network settings dari postgres route container
+
+    - jika kita menjalankan podman dari sudo maka ip address akan tersedia dengan network dari podman
+
+    - podman network ls : list network yang tersedia
+    - podman network inspect podman 
+    - podman ps --format "table {{.ID}}\t{{.Image}}\t{{.Names}}\t{{.Networks}}" --filter "network=podman"
+
+    - jika tidak maka kita bisa membuat network kita sendiri 
+        normalnya container bisa menemukan container lain via nama dan tidak harus menggunakan ip address jika berjalan pada network yang sama. namun jika mereka berjalan pada bridge network (default docker) atau berjalan pada podman network (default podman) mereka tidak bisa menemukan satu sama lain.
+
+        karna itulah kita perlu membuat sendiri custom network. lalu menempatkan container" kita di network tersebut sehingga mereka dapat menemukan satu sama lain dengan menggunakan nama
+
+        - docker network creaete bank-network
+
+        - menghubungkan existing container ke bank-network
+          docker network connect bank-network ps15
+
+          - karna berjalan pada network yang sama maka kita ganti hostnya dengan nama container ps
+          sudo podman run --name bankmandiri --network bank-network -p 8080:8080 -e GIN_MODE=release -e DB_SOURCE="postgresql://root:21204444@{nama container ps}:5432/bank_mandiri?sslmode=disable" bankmandiri:terbaru
+
+
+
+        NOTE : hanya podman dari sudo yang containnernya bisa sambung ke custom network
+
+
+// ini cuma percobaan saja
+
+berikan saya contoh kode untuk membuat bridge dengan IPAMConfig,Links,Aliases,NetworkID,EndpointID,Gateway,IPAddress,IPPrefixlen,IPv6Gateway,GlobalIPv6Adress,GlobalIPv6Prefixlen,MacAddress,dan driverOpts
