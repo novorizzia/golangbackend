@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  # mendeklarasikan list of services yang ingin kita launch
+  postgres:
+    # kita akan menggunakan docker image yang kita milii
+    image: postgres:15.2-alpine
+    environment:
+      # kita bisa mengcopy dari github ci workflow
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=21204444
+      - POSTGRES_DB=bank_mandiri
+
+
+
+  api:
+    build:
+      # . = current root folfer
+      context: . 
+      # memberitahukan docker untuk mencari docker file untuk membuat image
+      dockerfile: Dockerfile
+    
+    # mempublish port 8080 to the host machine so that we can call bank-mandiri api from the outside of the container
+    ports:
+      - "8080:8080"
+    
+    # tell api service how to connect to pq service
+    environment:
+      # ini akan meng override env di app.env
+      # dan karna berjalan di network yang sama mereka dapat berkomunikasi via nama service
+      - DB_SOURCE=postgresql://root:21204444@postgres:5432/bank_mandiri?sslmode=disable
+    # ini memastikan posgres service akan dijalankan sebelum api
+    depends_on:
+      - postgres
+
+      # jalankan wait dan host dan port untuk ditunggu adalah postgres:5432
+    entrypoint: ["/app/wait-for.sh","postgres:5432", "--", "/app/start.sh"]
+      # Setting entrypoint both overrides any default entrypoint set on the service’s image with the ENTRYPOINT Dockerfile instruction, and clears out any default command on the image - meaning that if there’s a CMD instruction in the Dockerfile, it is ignored.
+    command: ["/app/main"]

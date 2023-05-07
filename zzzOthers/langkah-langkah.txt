@@ -210,7 +210,16 @@ langkah langhkah :
 
         NOTE : hanya podman dari sudo yang containnernya bisa sambung ke custom network
 
+30. menuliskan docker-compose file 
+    dengan tujuan untuk otomatisasi all setup services in the same docker network and launch them all at once within single command with specific startup orders
 
-// ini cuma percobaan saja
+    docker compose up : untuk menjalankan compose
+    docker compose down : untuk menghapus container dan network yang sudah dibuat jika ada perubahan yang kita buat
 
-berikan saya contoh kode untuk membuat bridge dengan IPAMConfig,Links,Aliases,NetworkID,EndpointID,Gateway,IPAddress,IPPrefixlen,IPv6Gateway,GlobalIPv6Adress,GlobalIPv6Prefixlen,MacAddress,dan driverOpts
+URUTAN docker berjalan
+ 1. docker-compose
+ 1. docker-compose akan membuat pg container dari image postgres:15.2-alpine
+ 2. docker-compose akan menjalankan Dockerfile untuk membuat api image dan juga containernya
+ 3. docker-compose akan menjalankan entrypoint: ["/app/wait-for.sh","postgres:5432", "--", "/app/start.sh"]
+
+
