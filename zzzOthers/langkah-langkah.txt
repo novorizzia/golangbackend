@@ -163,6 +163,8 @@ langkah langhkah :
 
     - git push origin ft/docker
 
+AWS
+
 28. membuat Docker file secara multiple stage untuk membuat lighweigt docker image
      - buat docker file
      - lakukan multiple stage pada Dockerfile agar ukuran file yang dihasilkan menjadi kecil
@@ -222,4 +224,26 @@ URUTAN docker berjalan
  2. docker-compose akan menjalankan Dockerfile untuk membuat api image dan juga containernya
  3. docker-compose akan menjalankan entrypoint: ["/app/wait-for.sh","postgres:5432", "--", "/app/start.sh"]
 
+AWS
+
+1. manage session with refresh token RERESH TOKEN
+    -   tambahkan REFRESH_TOKEN_DURATION pada env
+    - memperbaharui config untuk menerima refresh token duration
+    - membuat schema migration baru untuk session
+    - membuat kode query untuk menangani session table
+    - run make sqlc
+    - run ulang mockgen -package mockdb -destination db/mock/store.go backendmaster/db/sqlc Store karna ada function baru yang harus ditambahkan dalam mockstore
+    - modify login api to create and return refresh token together with access token
+    - modify createToken to also return token id
+    - create new api to refresh token
+
+2. membuat dbdoc
+    - install dbdocs dari npm
+    - buat db.dbml file
+    - copy code dari yg online db editor dulu itu
+    - run dbdocs build doc/db.dbml
+
+3. generate sql dari dbml
+    - install npm dbml2sql
+    - run : dbml2sql --postgres -o doc/schema.sql doc/db.dbml
 

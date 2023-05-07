@@ -18,11 +18,12 @@ func TestPasetoMaker(t *testing.T) {
 	IssuedAt := time.Now()
 	expired_at := IssuedAt.Add(duration)
 
-	token, err := maker.CreateToken(username, duration)
+	token, payload, err := maker.CreateToken(username, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
-	payload, err := maker.VerifyToken(token)
+	payload, err = maker.VerifyToken(token)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
 
@@ -38,17 +39,18 @@ func TestExpiredPasetoToken(t *testing.T) {
 
 	username := random.RandomOwner()
 
-	token, err := maker.CreateToken(username, -time.Minute)
+	token, payload, err := maker.CreateToken(username, -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
-	payload, err := maker.VerifyToken(token)
+	payload, err = maker.VerifyToken(token)
 	require.Error(t, err)
 	require.EqualError(t, err, ErrorExpiredToken.Error())
 	require.Nil(t, payload)
 
 }
 
-// KITA TIDAK MEMBUTUHKAN TEST NONE ALGORITHM KARENA KASUS SEPERTI ITU TIDAK ADA DI PASETO 
+// KITA TIDAK MEMBUTUHKAN TEST NONE ALGORITHM KARENA KASUS SEPERTI ITU TIDAK ADA DI PASETO
 
 // TUGAS : MENULIS TEST INVALID TOKEN CASE

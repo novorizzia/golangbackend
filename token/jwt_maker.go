@@ -25,10 +25,10 @@ func NewJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, error) {
+func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (string, *Payload, error) {
 	payload, err := NewPayload(username, duration)
 	if err != nil {
-		return "", err
+		return "", payload, err
 	}
 
 	// NewWithClaims menerima 2 argument : sign method, claims (payload)
@@ -36,7 +36,8 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
 	// jwtToken.Sihgnedstring mengenerate token
-	return jwtToken.SignedString([]byte(maker.secretKey))
+	token, err := jwtToken.SignedString([]byte(maker.secretKey))
+	return token, payload, err
 }
 
 // VerifyToken melakukan verifikasi pada token. jika valid akan mengirimkan payload yang ada dalam body dari token tersebut
