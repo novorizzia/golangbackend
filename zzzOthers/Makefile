@@ -1,4 +1,5 @@
 # A Makefile is a plain text file that contains a set of rules for building, compiling, and executing code. It is a tool that automates the building of executable files and libraries from source code by executing a series of commands. Makefiles are often used in software development projects to simplify the process of building and managing complex systems. The Makefile consists of a set of targets and dependencies, which are used to specify the commands needed to build a specific output file from a set of source files. It is widely used in Linux and other Unix-based systems to manage software builds and deployments.
+DB_URL=postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable
 
 tes:
 	echo "hello world"
@@ -17,17 +18,17 @@ dropdb:
 	podman exec -it ps15 dropdb bank_mandiri
 
 migup:
-	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose up
+	migrate -path db/migration -database "$(DB_URL)" -verbose up
 
 migdown:
-	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose down
+	migrate -path db/migration -database "$(DB_URL)" -verbose down
 
 migupone:
-	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose up 1
+	migrate -path db/migration -database "$(DB_URL)" -verbose up 1
 # angka satu berarti kita hanya ingin migup satu versi lebih tinggi dari pada versi saat ini yang sedang berlaku
 
 migdownone:
-	migrate -path db/migration -database "postgresql://root:21204444@localhost:5432/bank_mandiri?sslmode=disable" -verbose down 1
+	migrate -path db/migration -database "$(DB_URL)" -verbose down 1
 # angka satu berarti kita hanya ingin merollback one last migration atau hanya jalankan migration yang paling akhir saja
 
 sqlc:
